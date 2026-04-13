@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress & Docs Tracker</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js & HTML2PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <div class="logo-icon"><i class="ri-book-open-line"></i></div>
+            <h1>Daily Progress</h1>
+        </div>
+        <div class="nav-actions">
+            <!-- Search Global -->
+            <div class="search-bar">
+                <i class="ri-search-line"></i>
+                <input type="text" id="global-search" placeholder="Search entries, tags...">
+            </div>
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme">
+                <i class="ri-moon-line"></i>
+            </button>
+            <button id="export-pdf-btn" class="icon-btn" aria-label="Export to PDF" title="Export Dashboard to PDF">
+                <i class="ri-file-download-line"></i>
+            </button>
+            <button id="add-entry-btn" class="primary-btn">
+                <i class="ri-add-line"></i> New Entry
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-container" id="printable-area">
+        
+        <!-- Left Sidebar / Calendar -->
+        <aside class="sidebar">
+            <!-- Calendar Widget -->
+            <div class="card calendar-card">
+                <div class="calendar-header">
+                    <button class="icon-btn" id="prev-month"><i class="ri-arrow-left-s-line"></i></button>
+                    <h3 id="calendar-month-year">May 2026</h3>
+                    <button class="icon-btn" id="next-month"><i class="ri-arrow-right-s-line"></i></button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                </div>
+                <div class="calendar-days" id="calendar-days">
+                    <!-- Days dynamically generated here -->
+                </div>
+            </div>
+
+            <!-- Dashboard Stats Widget -->
+            <div class="card stats-card">
+                <h3>Today's Insights</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="ri-time-line text-blue"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-hours">0h</span>
+                            <span class="stat-label">Productive</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="ri-check-line text-green"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-tasks">0</span>
+                            <span class="stat-label">Tasks</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="ri-fire-line text-orange"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-streak">0</span>
+                            <span class="stat-label">Streak Days</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="ri-image-line text-purple"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-files">0</span>
+                            <span class="stat-label">Attachments</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Chart Widget -->
+            <div class="card chart-card">
+                <div class="chart-header">
+                    <h3>Weekly Learning Hours</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Main Panel / Timeline -->
+        <section class="timeline-section">
+            <div class="timeline-header">
+                <div>
+                    <h2 class="selected-date-display" id="selected-date-display">Today</h2>
+                    <p class="subtitle" id="entries-count-display">0 entries found</p>
+                </div>
+            </div>
+
+            <div class="timeline-feed" id="timeline-feed">
+                <!-- Timeline items dynamically injected here -->
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="ri-book-3-line"></i></div>
+                    <h3>No entries for this date</h3>
+                    <p>Click "New Entry" to add your progress for today.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Adding Entry -->
+    <div id="entry-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Daily Entry</h2>
+                <button class="icon-btn close-modal-btn" aria-label="Close Modal"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="entry-form">
+                    
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="entry-date">Date</label>
+                            <input type="date" id="entry-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-priority">Priority Level</label>
+                            <select id="entry-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-title">Short Summary / Title</label>
+                        <input type="text" id="entry-title" placeholder="What did you work on?" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-notes">Detailed Notes</label>
+                        <!-- Basic rich text representation (textarea) for Vanilla JS ease -->
+                        <textarea id="entry-notes" rows="4" placeholder="Write down what you learned, challenges faced, etc. Use markdown for better formatting if desired." required></textarea>
+                    </div>
+
+                    <!-- Time Blocks -->
+                    <div class="form-group">
+                        <div class="flex-between">
+                            <label>Time Blocks</label>
+                            <button type="button" class="text-btn" id="add-time-block-btn"><i class="ri-add-circle-line"></i> Add Block</button>
+                        </div>
+                        <div id="time-blocks-container">
+                            <div class="time-block-row">
+                                <input type="time" class="tb-start" required>
+                                <span>to</span>
+                                <input type="time" class="tb-end" required>
+                                <input type="text" class="tb-desc" placeholder="E.g., Learned HTML" required>
+                                <button type="button" class="icon-btn text-red remove-tb-btn"><i class="ri-delete-bin-line"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tags & Mood -->
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="entry-tags">Tags (comma separated)</label>
+                            <input type="text" id="entry-tags" placeholder="css, javascript, frontend">
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-mood">Productivity Mood</label>
+                            <select id="entry-mood">
+                                <option value="🔥 On Fire">🔥 On Fire</option>
+                                <option value="👍 Productive" selected>👍 Productive</option>
+                                <option value="🤔 Challenging">🤔 Challenging</option>
+                                <option value="😴 Tired">😴 Tired</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-links">Links / References</label>
+                        <input type="text" id="entry-links" placeholder="https://...">
+                    </div>
+
+                    <!-- File Uploads using Custom Drag Drop Area -->
+                    <div class="form-group">
+                        <label>Upload Screenshots / Documents</label>
+                        <div class="file-drop-zone" id="file-drop-zone">
+                            <i class="ri-upload-cloud-2-line"></i>
+                            <p>Drag & drop files here or <span>click to browse</span></p>
+                            <input type="file" id="entry-files" multiple accept="image/*,.pdf,.doc,.docx,.txt" hidden>
+                        </div>
+                        <div class="file-preview-container" id="file-preview-container">
+                            <!-- Previews dynamically appended -->
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn close-modal-btn">Cancel</button>
+                <button type="submit" form="entry-form" class="primary-btn">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reminder Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
